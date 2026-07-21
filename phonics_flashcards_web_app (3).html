@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics Pop! - Comprehensive Thai-Guide Phonics Flashcards</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Educational & Fun look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Lexend:wght@300;400;600;800&family=Anuphan:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti for rewards -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Fredoka', 'Anuphan', 'Lexend', sans-serif;
+            background-color: #FFFDF9;
+        }
+
+        /* Solid Card UI Essentials (Neo-brutalist styling) */
+        .solid-border {
+            border: 4px solid #111827;
+        }
+        
+        .solid-shadow-sm {
+            box-shadow: 4px 4px 0px 0px #111827;
+        }
+
+        .solid-shadow {
+            box-shadow: 8px 8px 0px 0px #111827;
+        }
+
+        .solid-shadow-lg {
+            box-shadow: 12px 12px 0px 0px #111827;
+        }
+
+        /* Hover & Active states for solid buttons */
+        .solid-btn-interactive {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .solid-btn-interactive:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px 0px #111827;
+        }
+
+        .solid-btn-interactive:active {
+            transform: translate(4px, 4px);
+            box-shadow: 4px 4px 0px 0px #111827;
+        }
+
+        /* Custom Scrollbar to fit design */
+        ::-webkit-scrollbar {
+            width: 14px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFDF9;
+            border-left: 4px solid #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #34D399;
+            border: 4px solid #111827;
+            border-radius: 9999px;
+        }
+
+        /* Card 3D Flip System */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-gray-900 selection:bg-yellow-200">
+
+    <!-- Top Navigation Header -->
+    <header class="w-full bg-[#FF7E5F] solid-border border-t-0 border-x-0 py-5 px-6 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- Brand Logo with solid design -->
+            <div class="flex items-center gap-3">
+                <div class="bg-[#FFFDF9] solid-border solid-shadow-sm p-2 rounded-2xl rotate-[-1.5deg]">
+                    <span class="text-3xl font-black text-[#111827] tracking-tight">🔤 PHONICS MASTER</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="bg-[#FACC15] solid-border text-[11px] px-3 py-0.5 font-bold rounded-full w-max text-[#111827]">
+                        สารานุกรมออกเสียงเทียบไทย 100%
+                    </span>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-3">
+                <span class="text-sm font-extrabold bg-white solid-border px-3.5 py-1.5 rounded-xl text-slate-800">
+                    🎯 เรียนรู้ครบทุกตัวอักษรและเสียงผสม
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+
+        <!-- Filter, Search and Category Selection Box -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-end bg-[#A5B4FC] solid-border p-6 rounded-3xl solid-shadow">
+                
+                <!-- Search bar -->
+                <div class="lg:col-span-4 flex flex-col gap-2">
+                    <label class="font-black text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
+                        <i data-lucide="search" class="w-4 h-4"></i> ค้นหาตัวอักษร / คำศัพท์ / เทียบเสียงไทย:
+                    </label>
+                    <input type="text" id="search-input" oninput="filterCards()" placeholder="เช่น a, ch, s, แอะ, ช..." class="w-full px-4 py-3 solid-border rounded-xl font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-white placeholder-gray-500">
+                </div>
+
+                <!-- Category Filters Selector -->
+                <div class="lg:col-span-5 flex flex-col gap-2">
+                    <label class="font-black text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
+                        <i data-lucide="layers" class="w-4 h-4"></i> หมวดหมู่เสียงอักษร:
+                    </label>
+                    <div class="flex flex-wrap gap-2" id="category-filters-container">
+                        <!-- Will be dynamically generated with active highlights -->
+                    </div>
+                </div>
+
+                <!-- Live Statistics display -->
+                <div class="lg:col-span-3 bg-[#FFFDF9] solid-border p-4 rounded-2xl flex items-center justify-between w-full">
+                    <div>
+                        <div class="text-[11px] text-gray-500 font-extrabold tracking-wide uppercase">เรียนรู้สำเร็จแล้ว</div>
+                        <div class="text-2xl font-black text-emerald-600"><span id="mastered-count">0</span> / <span id="total-count">0</span></div>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <button onclick="resetProgress()" class="text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-2 solid-border rounded-xl font-bold transition-all active:translate-y-[1px]">
+                            ล้างข้อมูลฝึกฝน
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Info: Click Helper Indicator -->
+            <div class="text-center py-2 bg-yellow-100 solid-border rounded-2xl">
+                <p class="font-bold text-yellow-950 text-sm flex items-center justify-center gap-2">
+                    💡 <span class="underline">คลิกที่ตัวการ์ดเพื่อหมุนสลับหน้าพยัญชนะ</span> และ <span class="underline">กดปุ่มขยายความเข้าใจ</span> เพื่อศึกษารูปแบบปากและฟันอย่างละเอียด
+                </p>
+            </div>
+
+            <!-- Flashcards Grid Display -->
+            <div id="flashcards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-2">
+                <!-- Cards inject here via JavaScript loop -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Detailed Pronunciation Guide Dialog Modal -->
+    <div id="guide-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-[#FFFDF9] solid-border solid-shadow-lg w-full max-w-2xl p-6 sm:p-8 rounded-3xl relative overflow-y-auto max-h-[92vh]">
+            
+            <!-- Close Button -->
+            <button onclick="closeGuideModal()" class="absolute top-4 right-4 bg-slate-100 hover:bg-rose-200 p-2.5 solid-border rounded-xl text-gray-900 transition-colors z-10" title="ปิดหน้าต่าง">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            
+            <!-- Phonics Main Header inside popup -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 pb-4 border-b-2 border-dashed border-slate-200">
+                <div id="modal-color-bg" class="w-24 h-24 solid-border rounded-3xl flex items-center justify-center text-slate-900 shadow-inner shrink-0">
+                    <span id="modal-letter" class="text-5xl font-black">a</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="modal-symbol" class="text-lg font-black bg-white solid-border px-3.5 py-0.5 rounded-full text-slate-800">/æ/</span>
+                        <span id="modal-category" class="bg-slate-950 text-white text-xs px-3 py-1 font-bold rounded-full uppercase tracking-wider">Short Vowels</span>
+                    </div>
+                    <h3 id="modal-word-title" class="text-3xl font-black text-gray-900 mt-2">Apple (แอปเปิ้ล)</h3>
+                </div>
+            </div>
+
+            <!-- Detailed Content Sections with BIG READABLE THAI text -->
+            <div class="flex flex-col gap-4 text-gray-900">
+                
+                <!-- Equivalent Sound in Thai - LARGE TEXT DESIGN -->
+                <div class="bg-rose-100 p-5 solid-border rounded-2xl relative overflow-hidden">
+                    <div class="absolute top-1 right-2 opacity-10 text-rose-900 text-6xl font-black select-none font-sans">🔊</div>
+                    <h4 class="font-extrabold text-rose-950 text-base sm:text-lg flex items-center gap-2">
+                        <span>📢</span> เทียบเสียงภาษาไทยที่ใกล้เคียงที่สุด:
+                    </h4>
+                    <!-- Huge highly legible Thai sound comparative -->
+                    <p id="modal-thai-eq" class="text-3xl sm:text-4xl md:text-5xl font-black text-rose-700 mt-2 tracking-tight drop-shadow-sm bg-white/60 p-3 solid-border rounded-xl inline-block w-full text-center">
+                        เสียง แอะ (พ่นลมสั้น)
+                    </p>
+                </div>
+
+                <!-- How to pronounce (Syllable Anatomy) -->
+                <div class="bg-emerald-50 p-5 solid-border rounded-2xl">
+                    <h4 class="font-extrabold text-emerald-950 text-base sm:text-lg flex items-center gap-2">
+                        <span>👄</span> ตารางจัดระเบียบรูปปาก ตําแหน่งลิ้น และการออกลม:
+                    </h4>
+                    <p id="modal-mouth" class="text-base sm:text-lg text-slate-800 mt-2 leading-relaxed font-semibold bg-white/80 p-3.5 solid-border rounded-xl">
+                        อ้าปากให้กว้าง และดึงมุมปากไปด้านข้างเล็กน้อย วางลิ้นให้อยู่แนวราบส่วนล่างของปาก จากนั้นพ่นลมออกทางช่องปากอย่างกระชับ
+                    </p>
+                </div>
+
+                <!-- Blending / Spelling Breakdown -->
+                <div class="bg-indigo-100 p-5 solid-border rounded-2xl">
+                    <h4 class="font-extrabold text-indigo-950 text-base sm:text-lg flex items-center gap-2">
+                        <span>🧩</span> สูตรการผสมเสียงถอดรหัสคำศัพท์ (Word Blending):
+                    </h4>
+                    <p id="modal-breakdown" class="text-lg sm:text-xl font-extrabold text-indigo-900 mt-2 bg-white p-3.5 solid-border rounded-xl text-center tracking-wide">
+                        A (แอะ) + P-P-L-E (เพิล) = APPLE (แอปเปิล)
+                    </p>
+                </div>
+
+                <!-- Crucial Tips -->
+                <div class="bg-yellow-50 p-5 solid-border rounded-2xl border-yellow-200">
+                    <h4 class="font-extrabold text-yellow-950 text-base sm:text-lg flex items-center gap-2">
+                        <span>✨</span> เคล็ดลับเพิ่มเติมเพื่อสำเนียงที่ถูกต้อง:
+                    </h4>
+                    <p id="modal-tip" class="text-sm sm:text-base text-yellow-900 font-bold mt-1 leading-relaxed">
+                        ระวังไม่ลากเสียงยาวเป็น สระแอ เด็ดขาดเพราะเสียงนี้เป็นสระเสียงสั้นกระชับ!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Close Action Button -->
+            <button onclick="closeGuideModal()" class="w-full mt-6 py-4 bg-[#86EFAC] solid-border solid-shadow-sm rounded-2xl font-black text-lg text-slate-900 hover:bg-green-400 active:translate-y-[2px] transition-all">
+                เข้าใจแจ่มแจ้งแล้ว! ปิดหน้าต่างเรียนรู้
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Engine & Client Script Code -->
+    <script>
+        // Extremely Comprehensive Phonics Data featuring EVERY SINGLE PHONEME & COMBINATION
+        // Grouped logically into Short Vowels, Single Consonants, Digraphs, Long Vowels & Vowel Teams, and Blends.
+        const PHONICS_DATA = [
+            // ================= SHORT VOWELS =================
+            {
+                id: "v-a",
+                category: "Short Vowels",
+                letter: "a",
+                symbol: "/æ/",
+                word: "Apple",
+                thaiDesc: "แอะ (สั้นกระชับ)",
+                exampleThai: "แอปเปิ้ล",
+                thaiEquivalent: "สระ แอะ (เสียงสั้นกักปาก)",
+                mouthShape: "อ้าปากให้กว้างปานกลาง ดึงมุมปากทั้งสองข้างออกด้านข้างเล็กน้อย (คล้ายกำลังยิ้ม) วางลิ้นแบนราบเกาะฟันหน้าล่าง แล้วเปล่งลมออกมาเป็นคำกระชับทันที",
+                spellingBreakdown: "A (แอะ) + P-P-L-E (เพิล) = APPLE (แอปเปิ้ล)",
+                tip: "ห้ามออกเสียงเป็น สระแอ ลากเสียงยาวเด็ดขาด! ต้องเป็น แอะ แบบสั้นรวดเร็วสะกดคอ",
+                color: "#FECDD3", // Soft Rose Pink
+                emoji: "🍎"
+            },
+            {
+                id: "v-e",
+                category: "Short Vowels",
+                letter: "e",
+                symbol: "/e/",
+                word: "Egg",
+                thaiDesc: "เอะ (กึ่งแอะ)",
+                exampleThai: "ไข่",
+                thaiEquivalent: "สระ เอะ (แบบผ่อนคลายกล้ามเนื้อปาก)",
+                mouthShape: "อ้าปากให้แคบกว่าตัว a เล็กน้อย ปล่อยริมฝีปากบนและล่างตามธรรมชาติแบบไม่ต้องเกร็ง พ่นลมเสียง เอะ สั้นๆ จากช่องว่างกึ่งกลางปาก",
+                spellingBreakdown: "E (เอะ) + G-G (เกอะ) = EGG (เอ็ก)",
+                tip: "เสียงนี้อยู่กึ่งกลางระหว่าง แอะ และ เอะ ในภาษาไทย ควรทำปากผ่อนคลายที่สุด",
+                color: "#FED7AA", // Soft Peach
+                emoji: "🥚"
+            },
+            {
+                id: "v-i",
+                category: "Short Vowels",
+                letter: "i",
+                symbol: "/ɪ/",
+                word: "Igloo",
+                thaiDesc: "อิ (สั้นผ่อนคลาย)",
+                exampleThai: "บ้านน้ำแข็ง",
+                thaiEquivalent: "สระ อิ (ไม่ใช่ สระอี)",
+                mouthShape: "เผยอปากออกเล็กน้อยเท่านั้น คลายแก้มและขากรรไกร ยกลิ้นขึ้นกึ่งกลางค่อนไปด้านหน้า เป่าลมสั้นเสียง อิ ออกมาอย่างนุ่มนวล",
+                spellingBreakdown: "I (อิ) + G-L-O-O (กลู) = IGLOO (อิกลู)",
+                tip: "อย่าลากเสียงยาวเป็น อี! ให้คิดถึงสระอิในไทยที่พูดด้วยความรู้สึกที่ผ่อนคลายมากๆ",
+                color: "#FDE68A", // Soft Amber
+                emoji: "⛺"
+            },
+            {
+                id: "v-o",
+                category: "Short Vowels",
+                letter: "o",
+                symbol: "/ɒ/",
+                word: "Octopus",
+                thaiDesc: "เอาะ / ออ (กว้าง)",
+                exampleThai: "หมึกยักษ์",
+                thaiEquivalent: "สระ เอาะ / สระออ (กระชับคอเปิด)",
+                mouthShape: "เปิดขากรรไกรล่างตกลงมาตรงๆ เป็นแนวตั้ง ทำปากรูปวงรีแนวตั้งเปิดช่องคอให้กว้าง วางระดับลิ้นต่ำสุด เป่าลมสั้นเสียง เอาะ หรือ ออ",
+                spellingBreakdown: "O (เอาะ) + C-T-O-P-U-S (โทพุส) = OCTOPUS (ออคโทพุส)",
+                tip: "ให้จำลองอารมณ์คล้ายกำลังตกใจเบาๆ รูปปากแนวตั้งคอจะเปิดกว้าง ลมจะพุ่งได้อย่างอิสระ",
+                color: "#A7F3D0", // Soft Emerald
+                emoji: "🐙"
+            },
+            {
+                id: "v-u",
+                category: "Short Vowels",
+                letter: "u",
+                symbol: "/ʌ/",
+                word: "Umbrella",
+                thaiDesc: "อะ (จากลำคอ)",
+                exampleThai: "ร่ม",
+                thaiEquivalent: "สระ อะ (สั้นกึ่งสว่าง)",
+                mouthShape: "เปิดปากและขากรรไกรเล็กน้อย ผ่อนคลายกล้ามเนื้อปากและลิ้นทั้งหมด ลิ้นวางตัวนิ่งสนิทอยู่ที่พื้นปาก พ่นลมตรงออกมาเป็นเสียง อะ สั้นๆ จากคอ",
+                spellingBreakdown: "U (อะ) + M-B-R-E-L-L-A (มเบรลละ) = UMBRELLA (อัมเบรลละ)",
+                tip: "เป็นเสียงที่ผ่อนคลายที่สุด คล้ายเสียงถอนหายใจ 'อะ' สั้นๆ ตอนเหนื่อยล้า",
+                color: "#BFDBFE", // Soft Blue
+                emoji: "☔"
+            },
+
+            // ================= CONSONANTS (A-Z) =================
+            {
+                id: "c-b",
+                category: "Consonants",
+                letter: "b",
+                symbol: "/b/",
+                word: "Bat",
+                thaiDesc: "เบอะ (พ่นลมเบาๆ)",
+                exampleThai: "ค้างคาว",
+                thaiEquivalent: "พยัญชนะ บ.ใบไม้ (เสียงสั่นสะเทือนคอ)",
+                mouthShape: "เม้มริมฝีปากบนและล่างเข้าหากันเพื่อกักลมไว้ชั่วขณะ จากนั้นเปิดปากออกระเบิดลมเสียง 'เบอะ' ออกมาพร้อมกับการสั่นสะเทือนที่เส้นเสียงในลำคอ",
+                spellingBreakdown: "B (เบอะ) + A (แอะ) + T (เทอะ) = BAT (แบต)",
+                tip: "ต้องมีเสียงฮัมสั่นในลําคอเบาๆ ก่อนที่จะอ้าปากปล่อยลมออก",
+                color: "#DDD6FE", // Soft Purple
+                emoji: "🦇"
+            },
+            {
+                id: "c-c",
+                category: "Consonants",
+                letter: "c",
+                symbol: "/k/",
+                word: "Cat",
+                thaiDesc: "เคอะ (พ่นลมหนัก)",
+                exampleThai: "แมว",
+                thaiEquivalent: "พยัญชนะ ค.ควาย (เสียงเดาะพ่นลม)",
+                mouthShape: "ยกโคนลิ้นขึ้นไปสัมผัสและสกัดกั้นลมตรงบริเวณเพดานอ่อนด้านหลังคอ จากนั้นดีดโคนลิ้นลงอย่างรวดเร็วเพื่อปล่อยลมแห้ง 'เคอะ' พุ่งผ่านออกมา",
+                spellingBreakdown: "C (เคอะ) + A (แอะ) + T (เทอะ) = CAT (แคท)",
+                tip: "ออกเสียงโดยไม่ใช้เส้นเสียง (ไม่มีเสียงสั่นคอ) เป็นแค่เสียงลมฟู่กระแทกแห้งๆ เท่านั้น",
+                color: "#FBCFE8", // Soft Pink
+                emoji: "🐱"
+            },
+            {
+                id: "c-d",
+                category: "Consonants",
+                letter: "d",
+                symbol: "/d/",
+                word: "Dog",
+                thaiDesc: "เดอะ (ปลายลิ้นดีด)",
+                exampleThai: "สุนัข",
+                thaiEquivalent: "พยัญชนะ ด.เด็ก (เสียงสั่นสั้น)",
+                mouthShape: "แตะปลายลิ้นเข้าที่ปุ่มเหงือกส่วนบนหลังฟันหน้า กักลมไว้พร้อมทำเสียงฮัมสั่นในลำคอ แล้วดีดปลายลิ้นสะบัดลงเพื่อปล่อยลมเสียง 'เดอะ'",
+                spellingBreakdown: "D (เดอะ) + O (เอาะ) + G (เกอะ) = DOG (ด็อก)",
+                tip: "เสียงสั่นลำคอจะสั่นหนักกว่าเสียง ด.เด็ก ในภาษาไทยธรรมดาเล็กน้อย",
+                color: "#C7D2FE", // Soft Indigo
+                emoji: "🐶"
+            },
+            {
+                id: "c-f",
+                category: "Consonants",
+                letter: "f",
+                symbol: "/f/",
+                word: "Fish",
+                thaiDesc: "เฟอะ (ลมลอดฟัน)",
+                exampleThai: "ปลา",
+                thaiEquivalent: "พยัญชนะ ฟ.ฟัน (เน้นลมรั่ว)",
+                mouthShape: "แตะฟันหน้าบนเข้ากับส่วนในของริมฝีปากล่างเบาๆ เป่าลมพุ่งลอดช่องว่างเล็กๆ ระหว่างฟันหน้ากับริมฝีปากล่างจนได้ยินเสียงลมฟู่ 'ฟฟฟ...' นำหน้าเสียงเอะ",
+                spellingBreakdown: "F (เฟอะ) + I (อิ) + SH (ชู่) = FISH (ฟิช)",
+                tip: "ห้ามใช้ริมฝีปากประกบกันจนปิดลมเด็ดขาด ต้องปล่อยให้ลมรั่วได้ตลอดเวลา",
+                color: "#E2E8F0", // Slate Silver
+                emoji: "🐟"
+            },
+            {
+                id: "c-g",
+                category: "Consonants",
+                letter: "g",
+                symbol: "/ɡ/",
+                word: "Goat",
+                thaiDesc: "เกอะ (สั่นโคนลิ้น)",
+                exampleThai: "แพะ",
+                thaiEquivalent: "พยัญชนะ ก.ไก่ (แบบสั่นคอหนัก)",
+                mouthShape: "ดันโคนลิ้นชิดเพดานอ่อนเพื่อหยุดกักลม ทำเสียงสั่นก้องในลำคอ จากนั้นสลัดปล่อยลิ้นระเบิดพ่นเสียง 'เกอะ' ออกมาเบาๆ",
+                spellingBreakdown: "G (เกอะ) + O-A-T (โอท) = GOAT (โกท)",
+                tip: "เสียงนี้ออกสั่นคอหนัก ต่างจาก ก.ไก่ ไทยที่มีแต่ลมแห้งๆ ไม่มีสั่นสะเทือนที่เส้นเสียง",
+                color: "#CCFBF1", // Soft Teal
+                emoji: "🐐"
+            },
+            {
+                id: "c-h",
+                category: "Consonants",
+                letter: "h",
+                symbol: "/h/",
+                word: "Hat",
+                thaiDesc: "เฮอะ (ถอนหายใจ)",
+                exampleThai: "หมวก",
+                thaiEquivalent: "พยัญชนะ ฮ.นกฮูก (พ่นลมเบาจากคอ)",
+                mouthShape: "อ้าปากขึ้นพอประมาณ ปล่อยลิ้นนิ่งตามสบาย ทำปากผ่อนคลาย เป่าพ่นลมออกจากช่องลำคอลึกๆ โดยตรง เหมือนอาการหอบเหนื่อยหรือถอนหายใจยาวๆ",
+                spellingBreakdown: "H (เฮอะ) + A (แอะ) + T (เทอะ) = HAT (แฮต)",
+                tip: "ออกเสียงเพียงแค่ลมพ่นผ่านเท่านั้น ห้ามสั่นคอหรือเปล่งเสียงสระแรงเกินไป",
+                color: "#FEF08A", // Soft Gold
+                emoji: "👒"
+            },
+            {
+                id: "c-j",
+                category: "Consonants",
+                letter: "j",
+                symbol: "/dʒ/",
+                word: "Jug",
+                thaiDesc: "เจอะ (กักระเบิดปาก)",
+                exampleThai: "เหยือกน้ำ",
+                thaiEquivalent: "พยัญชนะ จ.จาน (แบบเกร็งลิ้นพ่นระเบิด)",
+                mouthShape: "แตะปลายลิ้นเข้าที่เพดานหน้าปากส่วนบน (เหนือปุ่มเหงือก) เกร็งขากรรไกร ดันลมและเสียงสั่นสู้ในคอ ก่อนสะบัดปลายลิ้นเปิดปล่อยเสียง 'เจอะ' ดุดันออกหน้าปาก",
+                spellingBreakdown: "J (เจอะ) + U (อะ) + G (เกอะ) = JUG (จัก)",
+                tip: "ไม่ใช่ จ.จาน เสียงเรียบแบบไทย แต่เป็น จ.จาน ที่มีลมฟู่ผสมการสะเบิดลมที่ขอบลิ้น",
+                color: "#E0F2FE", // Soft Sky Blue
+                emoji: "🥛"
+            },
+            {
+                id: "c-k",
+                category: "Consonants",
+                letter: "k",
+                symbol: "/k/",
+                word: "Kite",
+                thaiDesc: "เคอะ (ลมกระแทกฟู่)",
+                exampleThai: "ว่าว",
+                thaiEquivalent: "พยัญชนะ ค.ควาย (เสียงดีดหลังลิ้น)",
+                mouthShape: "มีวิธีจัดระเบียบอวัยวะเหมือนตัว C ทุกประการ โดยยกหลังลิ้นอุดลมเพดานอ่อนหลังคอ ดีดสลัดลิ้นลงปล่อยเสียงพ่นลมแห้งฉับพลันเป็นเสียง 'เคอะ'",
+                spellingBreakdown: "K (เคอะ) + I-T-E (อายท์) = KITE (คายท์)",
+                tip: "ไม่เกร็งสั่นลำคอ มีแต่เสียงกระแกลมแห้งอย่างเดียว คล้ายกำลังพ่นเม็ดแตงโมออกจากช่องใน",
+                color: "#FFEDD5", // Soft Cream
+                emoji: "🪁"
+            },
+            {
+                id: "c-l",
+                category: "Consonants",
+                letter: "l",
+                symbol: "/l/",
+                word: "Leaf",
+                thaiDesc: "เลอะ (แตะปุ่มเหงือก)",
+                exampleThai: "ใบไม้",
+                thaiEquivalent: "พยัญชนะ ล.ลิง (แตะค้างปล่อยออกข้าง)",
+                mouthShape: "แตะปลายลิ้นชิดปุ่มเหงือกฟันหน้าบนตรงกลางอย่างมั่นคง ออกเสียงคอเพื่อสะสมลมปล่อยออกช่องแก้มทั้งสองข้าง จากนั้นสลัดปลายลิ้นดิ่งลงเป็นเสียง 'เลอะ'",
+                spellingBreakdown: "L (เลอะ) + E-A-F (อีฟ) = LEAF (ลีฟ)",
+                tip: "หากอยู่ปลายคำ (ตัวสะกด) จะใช้วิธีแตะลิ้นค้างไว้ที่ปุ่มเหงือกเพื่อกักเสียงอู่ในคอ",
+                color: "#D1FAE5", // Soft Mint
+                emoji: "🍃"
+            },
+            {
+                id: "c-m",
+                category: "Consonants",
+                letter: "m",
+                symbol: "/m/",
+                word: "Moon",
+                thaiDesc: "เมอะ (เสียงขึ้นจมูก)",
+                exampleThai: "พระจันทร์",
+                thaiEquivalent: "พยัญชนะ ม.ม้า (ปิดปากแน่นเสียงขึ้นนาสิก)",
+                mouthShape: "ปิดมุมปากทั้งสองและริมฝีปากแน่นสนิท ปล่อยเสียงสั่นผ่านกระบังลมดันลมขึ้นไปสะเทือนในช่องจมูก (เสียงอือ...) แล้วจึงเปิดปากฮัมเสียง 'เมอะ' ออก",
+                spellingBreakdown: "M (เมอะ) + O-O-N (อูน) = MOON (มูน)",
+                tip: "ลองปิดจมูกระหว่างพูด ม.ม้า ถ้าพูดได้ แสดงว่าออกเสียงผิด เพราะเสียง m ต้องขึ้นจมูกเสมอ",
+                color: "#F3E8FF", // Soft Lilac
+                emoji: "🌙"
+            },
+            {
+                id: "c-n",
+                category: "Consonants",
+                letter: "n",
+                symbol: "/n/",
+                word: "Nest",
+                thaiDesc: "เนอะ (แตะขึ้นจมูก)",
+                exampleThai: "รังนก",
+                thaiEquivalent: "พยัญชนะ น.หนู (แตะลิ้นค้างอุดคอขึ้นจมูก)",
+                mouthShape: "แตะแนวปลายลิ้นแบนราบเข้ากับปุ่มเหงือกบนทั้งหมดเพื่อปิดกั้นช่องลมปาก บังคับลมให้พุ่งไหลย้อนออกทางจมูก (เสียงอึน...) ก่อนดีดลิ้นปล่อยเสียง 'เนอะ'",
+                spellingBreakdown: "N (เนอะ) + E-S-T (เอสท์) = NEST (เนสท์)",
+                tip: "เป็นอีกหนึ่งพยัญชนะนาสิกที่ลมต้องไหลผ่านจมูกเป็นหลัก",
+                color: "#FFDDD2", // Soft Coral
+                emoji: "🪺"
+            },
+            {
+                id: "c-p",
+                category: "Consonants",
+                letter: "p",
+                symbol: "/p/",
+                word: "Pig",
+                thaiDesc: "เพอะ (พ่นลมแรง)",
+                exampleThai: "หมู",
+                thaiEquivalent: "พยัญชนะ พ.พาน (ระเบิดลมแห้ง)",
+                mouthShape: "เม้มริมฝีปากปิดให้สนิท กักลมอัดไว้แน่นในปากโดยห้ามสั่นเส้นเสียง จากนั้นเปิดขยับปากพ่นลมกระแทกแรงๆ แห้งๆ ออกมาเป็นเสียง 'เพอะ'",
+                spellingBreakdown: "P (เพอะ) + I (อิ) + G (เกอะ) = PIG (พิก)",
+                tip: "หากนำกระดาษทิชชูมาวางข้างหน้าปาก เวลาพ่นเสียง p ทิชชูต้องปลิวขยับชัดเจนจากแรงลม",
+                color: "#FCE7F3", // Soft Rose
+                emoji: "🐷"
+            },
+            {
+                id: "c-q",
+                category: "Consonants",
+                letter: "qu",
+                symbol: "/kw/",
+                word: "Queen",
+                thaiDesc: "คเวอะ (ควบกล้ำ ค+ว)",
+                exampleThai: "พระราชินี",
+                thaiEquivalent: "ค ควบ ว (ออกเสียงกลืนสองพยางค์)",
+                mouthShape: "ทำรูปปากห่อกลมแคบเพื่อทำเสียงพยัญชนะ ค. (คเวอะ) ควบคู่กับเสียง ว. ในลักษณะเคลื่อนย้ายริมฝีปากเปิดแผ่ออกอย่างรวดเร็ว",
+                spellingBreakdown: "QU (คเวอะ) + E-E-N (อีน) = QUEEN (ควีน)",
+                tip: "มักจะมาคู่กับสระ u เสมอในพจนานุกรมภาษาอังกฤษ และออกเสียงควบกันแน่น",
+                color: "#FEF08A", // Soft Lemon
+                emoji: "👑"
+            },
+            {
+                id: "c-r",
+                category: "Consonants",
+                letter: "r",
+                symbol: "/r/",
+                word: "Ring",
+                thaiDesc: "เรอะ (ปากห่อลิ้นลอย)",
+                exampleThai: "แหวน",
+                thaiEquivalent: "ร.เรือ (แบบห่อริมฝีปาก ไม่รัวลิ้น)",
+                mouthShape: "ทำปากห่อจู๋ยื่นมาข้างหน้า ดึงโคนลิ้นหดถอยหลัง ห่อริมฝีปากกลม ปลายลิ้นยกลอยตรงกลางปาก (ไม่แตะต้องส่วนใดของปากเลย) พ่นลมสั่นคอเสียง 'เรอะ'",
+                spellingBreakdown: "R (เรอะ) + I-N-G (อิง) = RING (ริง)",
+                tip: "ห้ามปลายลิ้นแตะฟันหรือเพดานและห้ามกระดกลิ้นรัวๆ แบบ ร.เรือ ไทยเด็ดขาด!",
+                color: "#CFFAFE", // Soft Ice Blue
+                emoji: "💍"
+            },
+            {
+                id: "c-s",
+                category: "Consonants",
+                letter: "s",
+                symbol: "/s/",
+                word: "Sun",
+                thaiDesc: "เซอะ (ลมลอดฟัน สสส)",
+                exampleThai: "พระอาทิตย์",
+                thaiEquivalent: "พยัญชนะ ซ.โซ่ / ส.เสือ (เสียงพ่นลมยาว)",
+                mouthShape: "เรียงฟันบนและฟันล่างให้เกือบชิดประกบกัน ดันปลายลิ้นขึ้นไปลอยเฉียดปุ่มเหงือกบน เป่าลมแห้งต่อเนื่องผ่านผิวลิ้นลอดไรฟันหน้าออกมาเสียงดังฟู่ 'สสสส...'",
+                spellingBreakdown: "S (เซอะ) + U (อะ) + N (เนอะ) = SUN (ซัน)",
+                tip: "ต้องได้ยินเสียงลมเสียดแทรกผ่านไรฟันที่ประกบกันอย่างเด่นชัดและยาวพอดี",
+                color: "#FDE047", // Soft Gold Yellow
+                emoji: "☀️"
+            },
+            {
+                id: "c-t",
+                category: "Consonants",
+                letter: "t",
+                symbol: "/t/",
+                word: "Tent",
+                thaiDesc: "เทอะ (ลมดีดสะบัด)",
+                exampleThai: "เต็นท์",
+                thaiEquivalent: "พยัญชนะ ท.ทหาร (ระเบิดเสียงลมแห้ง)",
+                mouthShape: "แตะแบนส่วนปลายลิ้นกดชิดปุ่มเหงือกบนอุดลมหน้าปากไว้ จากนั้นกระชากปลายลิ้นดีดต่ำลงอย่างเร็ว พ่นลมแห้งกระแทกปะทะหน้าช่องปากเป็นเสียง 'เทอะ'",
+                spellingBreakdown: "T (เทอะ) + E-N-T (เอนท์) = TENT (เทนท์)",
+                tip: "คล้ายเสียง ท.ทหาร สะบัดปลายลิ้นแต่ห้ามมีลมสั่นคอเปนสระเอปนแรงไป",
+                color: "#E2E8F0", // Slate Silver
+                emoji: "⛺"
+            },
+            {
+                id: "c-v",
+                category: "Consonants",
+                letter: "v",
+                symbol: "/v/",
+                word: "Van",
+                thaiDesc: "เวอะ (ฟันบนแตะปากล่าง)",
+                exampleThai: "รถตู้",
+                thaiEquivalent: "ว.แหวน ผสม ฟ.ฟัน (เสียงสั่นสะเทือนคอ)",
+                mouthShape: "แตะขอบฟันหน้าบนลงบนส่วนนุ่มผิวริมฝีปากล่าง (เหมือนตอนออกเสียง f) แต่ให้ปล่อยเสียงสั่นสะเทือนจากลำคอฮัมอึ้งค้างไว้แล้วพ่นเสียงพุ่งสะเทือน 'เวอะ' คอจะสั่น",
+                spellingBreakdown: "V (เวอะ) + A (แอะ) + N (เนอะ) = VAN (แวน)",
+                tip: "ข้อแตกต่างระหว่าง V กับ F คือ ขณะพ่นลม V เส้นเสียงที่ลำคอต้องสั่นด้วยความรู้สึกสั่นเครือ",
+                color: "#FFECD2", // Soft Peach
+                emoji: "🚐"
+            },
+            {
+                id: "c-w",
+                category: "Consonants",
+                letter: "w",
+                symbol: "/w/",
+                word: "Web",
+                thaiDesc: "เวอะ (ปากห่อกลมแผ่)",
+                exampleThai: "ใยแมงมุม",
+                thaiEquivalent: "พยัญชนะ ว.แหวน (ปากจู๋แผ่กว้าง)",
+                mouthShape: "ห่อปากทำช่องกลมเล็กมากและจู๋ไปข้างหน้าอย่างเกร็ง จากนั้นขยับคลายริมฝีปากออกกว้างแผ่ระเบิดลมสว่างเป็นเสียง 'เวอะ'",
+                spellingBreakdown: "W (เวอะ) + E (เอะ) + B (เบอะ) = WEB (เว็บ)",
+                tip: "แตกต่างจากเสียง v ตรงที่ฟันบนต้องไม่แตะโดนริมฝีปากล่างแม้แต่นิดเดียว",
+                color: "#E0F2FE", // Soft Sky
+                emoji: "🕸️"
+            },
+            {
+                id: "c-x",
+                category: "Consonants",
+                letter: "x",
+                symbol: "/ks/",
+                word: "Xylophone",
+                thaiDesc: "คึ-สึ (ท้ายคำพ่นยาว)",
+                exampleThai: "ระนาดฝรั่ง",
+                thaiEquivalent: "เสียง ค สะกดผสม ซ (กักแล้วปล่อยฟู่)",
+                mouthShape: "หากอยู่ท้ายคำ (เช่น Box) ให้เริ่มทำเสียงกักโคนลิ้น (คึ) สั้นๆ ในลำคอ แล้วระเบิดลมปล่อยเสียงพ่นยาวลอดไรฟันเสียง (สสส...) ต่อทันทีโดยไม่หยุดช่องหายใจ",
+                spellingBreakdown: "X-Y-L-O-P-H-O-N-E (ไซโลโฟน)",
+                tip: "หากขึ้นต้นประโยคคำศัพท์ มักจะออกเสียงพยัญชนะกลายเป็นเสียง ซ.โซ่ ตรงๆ เช่น Xylophone (ไซโลโฟน)",
+                color: "#FEE2E2", // Soft Red
+                emoji: "🎹"
+            },
+            {
+                id: "c-y",
+                category: "Consonants",
+                letter: "y",
+                symbol: "/j/",
+                word: "Yo-yo",
+                thaiDesc: "เยอะ (สั่นหลังลิ้น)",
+                exampleThai: "ลูกดิ่งโยโย่",
+                thaiEquivalent: "พยัญชนะ ย.ยักษ์ (แบบบีบช่องลิ้นขึ้นบน)",
+                mouthShape: "ยกหลังลิ้นส่วนหน้าขึ้นใกล้เพดานปาก ทำช่องลมให้แคบ บีบเสียงสั่นเครือจากคอพุ่งผ่านช่องทางแคบของลิ้นและเพดานออกมาเกิดเป็นเสียง 'เยอะ'",
+                spellingBreakdown: "Y-O (โย) + Y-O (โย) = YO-YO (โยโย่)",
+                tip: "ต้องรู้สึกบีบเสียงแน่นช่วงกลางเพดานปากมากกว่าเสียง ย.ยักษ์ ภาษาไทยทั่วไป",
+                color: "#FEF08A", // Soft Gold
+                emoji: "🪀"
+            },
+            {
+                id: "c-z",
+                category: "Consonants",
+                letter: "z",
+                symbol: "/z/",
+                word: "Zebra",
+                thaiDesc: "เซอะ (สั่นสะเทือนแบบผึ้ง)",
+                exampleThai: "ม้าลาย",
+                thaiEquivalent: "ซ.โซ่ (แบบเสียงสั่นคอลึกสะเทือนฟัน)",
+                mouthShape: "ประกบหน้าฟันล่างบนชิดกัน ดันปลายลิ้นประชิดแต่อย่าให้แตะฟัน ปล่อยลมพร้อมสั่นกล่องเสียงคออย่างแรงให้สะเทือนเกิดเสียงสั่นหึ่งระรัวคล้ายผึ้งบินข้างหู 'ซซซซ...'",
+                spellingBreakdown: "Z (เซอะ) + E-B-R-A (บรา) = ZEBRA (ซีบรา)",
+                tip: "หากเอามือจับที่ลำคอตรงลูกกระเดือก คอจะต้องรู้สึกสั่นรัวรุนแรงขัดสว่าง",
+                color: "#E2E8F0", // Slate Silver
+                emoji: "🦓"
+            },
+
+            // ================= DIGRAPHS =================
+            {
+                id: "d-ch",
+                category: "Digraphs",
+                letter: "ch",
+                symbol: "/tʃ/",
+                word: "Chair",
+                thaiDesc: "ชึ (พ่นกระแทกสั้น)",
+                exampleThai: "เก้าอี้",
+                thaiEquivalent: "เสียง ช (แบบกักกระชากลมสั้น)",
+                mouthShape: "ยกปลายลิ้นอุดกระแสลมไว้หลังปุ่มเหงือกฟันหน้าบน ทำปากจู๋ยื่นออกข้างหน้า สะสมแรงดันลมแล้วดีดปลายลิ้นลดลงฉับพลัน ปล่อยเสียงลมฟู่ 'ชึ' สั้นและกระแทกแกร่ง",
+                spellingBreakdown: "CH (ชึ) + A-I-R (แอร์) = CHAIR (แชร์)",
+                tip: "จังหวะเสียงให้ความรู้สึกเหมือนอาการ 'จาม' (ฮัดชิ่ว!) คือสั้น มีแรงปะทะ ลมกระแทกผ่านช่องลิ้น",
+                color: "#FFD8A8", // Soft Orange
+                emoji: "🪑"
+            },
+            {
+                id: "d-sh",
+                category: "Digraphs",
+                letter: "sh",
+                symbol: "/ʃ/",
+                word: "Ship",
+                thaiDesc: "ชู่... (ลมยาวต่อเนื่อง)",
+                exampleThai: "เรือเดินสมุทร",
+                thaiEquivalent: "เสียง ช (แบบสั่งให้คนเงียบ 'ชู่ว...')",
+                mouthShape: "ห่อปากกลมยื่นไปข้างหน้าฟันล่างบนเกือบสบกัน ยกขอบลิ้นข้างๆ ขึ้นแตะฟันบนเปิดแนวร่องกลางลิ้น ปล่อยลมแห้งไหลต่อเนื่องออกหน้าปากเสียง 'ชู่ววว...'",
+                spellingBreakdown: "SH (ชู่) + I (อิ) + P (เพอะ) = SHIP (ชิป)",
+                tip: "ห้ามกักลมแบบ ch! เสียงนี้ห้ามลิ้นสัมผัสแตะเพดานหน้าปาก ปล่อยให้ลมไหลรั่วพริ้วไหวตลอดเวลา",
+                color: "#D0EBFF", // Soft Blue
+                emoji: "🚢"
+            },
+            {
+                id: "d-th-unvoiced",
+                category: "Digraphs",
+                letter: "th (unvoiced)",
+                symbol: "/θ/",
+                word: "Thin",
+                thaiDesc: "แลบลิ้นเป่าลมแห้ง",
+                exampleThai: "ผอมบาง",
+                thaiEquivalent: "ไม่มีในภาษาไทย (แลบปลายลิ้นเป่าลมแห้ง)",
+                mouthShape: "แลบปลายลิ้นโผล่ออกมาพ้นขอบฟันหน้าบนและล่างเล็กน้อย วางฟันลงสัมผัสบนผิวลิ้นเบาๆ (ห้ามกัด) จากนั้นเป่าลมพุ่งผ่านช่องลิ้นให้เกิดเสียงลมฟู่แห้งรั่วออกข้าง",
+                spellingBreakdown: "TH (เป่าลม) + I-N (อิน) = THIN (ทิน / คล้ายเสียง ซิน ปน ทิน)",
+                tip: "ห้ามทำเสียงเป็น ท.ทหาร หรือ ซ.โซ่ ทันทีโดยไม่ยอมแลบลิ้น เพราะคำจะเพี้ยนทันที",
+                color: "#E2E8F0", // Silver
+                emoji: "📏"
+            },
+            {
+                id: "d-th-voiced",
+                category: "Digraphs",
+                letter: "th (voiced)",
+                symbol: "/ð/",
+                word: "Them",
+                thaiDesc: "เดอะ (แลบลิ้นสั่นคอ)",
+                exampleThai: "พวกเขา",
+                thaiEquivalent: "ไม่มีในไทย (แลบลิ้นเกลี่ยเสียง ด.)",
+                mouthShape: "จัดระเบียบรูปปากและแลบปลายลิ้นออกมาแตะหน้าฟันบนเบาๆ เหมือน th unvoiced แต่รอบนี้ให้เปล่งเสียงสะเทือนฮัมสั่นคอค้างไว้ แล้วดึงลิ้นกลับเร็วทำเสียงสะเทือนปน 'ด-ธ'",
+                spellingBreakdown: "TH (สั่นคอดึงลิ้นกลับ) + E-M (เอ็ม) = THEM (เด็ม)",
+                tip: "เสียงสะเทือนจะหนาและแน่น เหมาะสำหรับการพูดคำเชื่อมประโยค เช่น The, This, That, Them",
+                color: "#E2E8F0", // Silver
+                emoji: "👥"
+            },
+            {
+                id: "d-ng",
+                category: "Digraphs",
+                letter: "ng",
+                symbol: "/ŋ/",
+                word: "Ring",
+                thaiDesc: "อึง (สะกด ง.ขึ้นจมูก)",
+                exampleThai: "แหวน",
+                thaiEquivalent: "ตัวสะกด ง.งู (ขึ้นโพรงจมูกยาว)",
+                mouthShape: "ยกหลังลิ้นขึ้นประกบปิดเพดานอ่อนด้านหลังช่องปาก บังคับกระแสเสียงให้พุ่งขึ้นจมูกเสียงฮัมค้างยาวนุ่ม 'อึง...' ก่อนจบอย่างนิ่งสงบ",
+                spellingBreakdown: "R (เรอะ) + I (อิ) + NG (อึง) = RING (ริง)",
+                tip: "เมื่อเป็นเสียงท้ายคำ ให้แตะหลังลิ้นค้างไว้กับเพดานอ่อน เพื่อให้เกิดเสียงขึ้นจมูกที่ต่อเนื่อง",
+                color: "#D3F9D8", // Soft Emerald
+                emoji: "💍"
+            },
+            {
+                id: "d-ph",
+                category: "Digraphs",
+                letter: "ph",
+                symbol: "/f/",
+                word: "Phone",
+                thaiDesc: "เฟอะ (ลมลอดไรฟัน)",
+                exampleThai: "โทรศัพท์",
+                thaiEquivalent: "พยัญชนะ ฟ.ฟัน (เหมือนเสียงตัว F)",
+                mouthShape: "ใช้วิธีจัดระเบียบฟันหน้าและริมฝีปากล่างเป่าลมลอดไรฟันเหมือนตัว f ทุกประการ พ่นกระแบลมให้ผ่านช่องแคบจนเกิดเสียงลมรั่วเด่นชัดเสียง 'เฟอะ'",
+                spellingBreakdown: "PH (เฟอะ) + O-N-E (โอน) = PHONE (โฟน)",
+                tip: "จำง่ายๆ ว่าเมื่อตัว p จับคู่กับ h จะสละลักษณะระเบิดริมฝีปากไป และใช้เสียงลมพริ้วไหวของ f แทน",
+                color: "#FFF0F6", // Soft Lavender Pink
+                emoji: "📱"
+            },
+            {
+                id: "d-wh",
+                category: "Digraphs",
+                letter: "wh",
+                symbol: "/w/",
+                word: "Wheel",
+                thaiDesc: "เวอะ (ปากห่อเป่าลม)",
+                exampleThai: "ล้อรถ",
+                thaiEquivalent: "พยัญชนะ ว.แหวน (เน้นลมควบคู่)",
+                mouthShape: "ห่อปากแคบกลมทำช่องเล็กมากคล้ายจะผิวปาก เป่าลมดันนำล่วงหน้าเล็กน้อยก่อนคลายมุมปากออกด้านข้างปล่อยเสียงพ่นสว่าง 'เวอะ'",
+                spellingBreakdown: "WH (เวอะ) + E-E-L (อีล) = WHEEL (วีล)",
+                tip: "ในบางสำเนียงโบราณหรือสำเนียงดั้งเดิม เสียงนี้จะมีกระแสลม 'ฮ' พัดผ่านสว่างนำหน้าเสียงสะกดเสมอ",
+                color: "#E3FAF2", // Soft Mint
+                emoji: "🛞"
+            },
+            {
+                id: "d-ck",
+                category: "Digraphs",
+                letter: "ck",
+                symbol: "/k/",
+                word: "Duck",
+                thaiDesc: "อึก (สะกด ค.ควาย)",
+                exampleThai: "เป็ด",
+                thaiEquivalent: "ตัวสะกด ก.ไก่ / ค.ควาย (กักเสียงหลังลิ้น)",
+                mouthShape: "มักปรากฏอยู่ท้ายพยางค์ ทำหน้าที่สะกดเสียง โดยยกโคนลิ้นอุดลมเพดานอ่อนท้ายช่องปากอย่างรวดเร็ว กักลมค้างแล้วสะบัดเสียง 'คึ' เบาๆ ท้ายคำ",
+                spellingBreakdown: "D (เดอะ) + U (อะ) + CK (คึ) = DUCK (ดัก)",
+                tip: "เมื่อสะกดด้วย ck ให้ออกเสียงสะกดแน่น คม และชัดเจนกว่าการมีตัว k เพียงลำพัง",
+                color: "#FFE3E3", // Soft Rose
+                emoji: "🦆"
+            },
+
+            // ================= LONG VOWELS =================
+            {
+                id: "lv-ai",
+                category: "Long Vowels",
+                letter: "ai / ay",
+                symbol: "/eɪ/",
+                word: "Rain",
+                thaiDesc: "เอ-อี (สระเอมีหาง)",
+                exampleThai: "ฝนตก",
+                thaiEquivalent: "สระ เอ (ที่มีเสียงสั้นสระอีพ่วงท้าย)",
+                mouthShape: "เริ่มจากอ้าปากทำรูปสระ เอ แล้วค่อยๆ เลื่อนโครงขากรรไกรและรูปปากแคบเรียวลงกลายรูปเป็นสระ อี สั้นๆ ห้อยท้าย ลากเสียงต่อกันลื่นไหลสมูท",
+                spellingBreakdown: "R (เรอะ) + AI (เอ-อี) + N (เนอะ) = RAIN (เรน / เร-อิน)",
+                tip: "เสียงนี้ไม่ใช่สระเอ แข็งๆ แบบภาษาไทย แต่จะมีจุดเด่นคือมีหางเสียงสลัวกลายเสียงสว่างเลื่อนไปทางสระ อี เสมอ",
+                color: "#F3F0FF", // Soft Purple
+                emoji: "🌧️"
+            },
+            {
+                id: "lv-ee",
+                category: "Long Vowels",
+                letter: "ee / ea",
+                symbol: "/iː/",
+                word: "Tree",
+                thaiDesc: "อี (ยิ้มกว้างฉีกปาก)",
+                exampleThai: "ต้นไม้",
+                thaiEquivalent: "สระ อี (แบบฉีกฉายยิ้มเต็มแก้ม)",
+                mouthShape: "ฉีกยิ้มให้กว้างที่สุดเท่าที่จะทำได้ ดึงมุมปากและกล้ามเนื้อข้างแก้มทั้งสองย้อนไปด้านหลังเกร็งตึง ยกลิ้นขึ้นสูงระนาบเพดานเป่าเสียง อี ลากยาวสว่าง",
+                spellingBreakdown: "T-R (ทรี) + EE (อี) = TREE (ทรี)",
+                tip: "ยิ่งฉีกยิ้มกว้างเกร็งแก้ม เสียง ee จะสว่าง สดใส และใสชัดเจนยิ่งขึ้น",
+                color: "#E2F0D9", // Soft Leaf Green
+                emoji: "🌳"
+            },
+            {
+                id: "lv-ie",
+                category: "Long Vowels",
+                letter: "ie / y",
+                symbol: "/aɪ/",
+                word: "Pie",
+                thaiDesc: "อา-อิ (สระไอมีหาง)",
+                exampleThai: "ขนมพาย",
+                thaiEquivalent: "สระ ไอ (ที่เลื่อนเสียงปิดด้วย อิ)",
+                mouthShape: "เริ่มจากขยายเปิดปากกว้างคอกว้างเพื่อทำเสียง สระอา แล้วดึงริมฝีปากบนล่างแบนเรียวลงตามแนวตั้งเพื่อสไลด์เลื่อนจมไปหาเสียง สระอิ ตอนท้ายเสียงสะกด",
+                spellingBreakdown: "P (เพอะ) + IE (อา-อิ) = PIE (พาย / พา-อิ)",
+                tip: "ออกเสียงคำควบให้ลื่นไหลในหนึ่งจังหวะ จากกว้างลงไปแคบ",
+                color: "#FFF9DB", // Soft Banana
+                emoji: "🥧"
+            },
+            {
+                id: "lv-oa",
+                category: "Long Vowels",
+                letter: "oa / ow",
+                symbol: "/əʊ/",
+                word: "Boat",
+                thaiDesc: "โอ-อู (สระโอปากห่อ)",
+                exampleThai: "เรือเล็ก",
+                thaiEquivalent: "สระ โอ (ที่เคลื่อนไปหา อู ท้ายพยางค์)",
+                mouthShape: "เริ่มที่รูปปากเสียง โอ (ปากกลมพอประมาณ) แล้วค่อยๆ ห่อริมฝีปากสองข้างบีบแคบจู๋ลงกลายเป็นเสียง อู จางๆ ที่ปลายหางเสียงสว่าง",
+                spellingBreakdown: "B (เบอะ) + OA (โอ-อู) + T (เทอะ) = BOAT (โบท / โบ-อุท)",
+                tip: "สำเนียงเจ้าของภาษามักจะจบลงด้วยสัมผัสการบีบขอบปากเล็กน้อยคล้ายเสียง อู",
+                color: "#E6FCFF", // Soft Blue
+                emoji: "⛵"
+            },
+            {
+                id: "lv-ue",
+                category: "Long Vowels",
+                letter: "ue / ew",
+                symbol: "/juː/",
+                word: "Glue",
+                thaiDesc: "อู / อิว (ปากจู๋)",
+                exampleThai: "กาว",
+                thaiEquivalent: "สระ อู / สระ อิว (ห่อริมฝีปากกลมแน่น)",
+                mouthShape: "บีบห่อริมฝีปากเป็นท่อรูเล็กกลมแน่นยื่นออกข้างหน้านอกหน้าปากให้ยาวต่อเนื่อง เป่าพลังเสียงสั่นคอเสียง อู ค้างนิ่งชัดเจน",
+                spellingBreakdown: "G-L (เกลอะ) + UE (อู) = GLUE (กลู)",
+                tip: "บางคำจะขึ้นต้นผสมด้วยเสียง ย.ยักษ์ เบาๆ เช่น Few (ฟิว) หรือ Cue (คิว)",
+                color: "#E1F2FF", // Soft Sky
+                emoji: "🧪"
+            },
+            {
+                id: "lv-oo-long",
+                category: "Long Vowels",
+                letter: "oo (long)",
+                symbol: "/uː/",
+                word: "Moon",
+                thaiDesc: "อู (ลากยาวเสถียร)",
+                exampleThai: "พระจันทร์",
+                thaiEquivalent: "สระ อู (แบบยาวเสถียร)",
+                mouthShape: "ห่อริมฝีปากเรียงแหลมกลมและยื่นออกหน้าเป็นช่องแคบลอยสูง เปล่งพ่นลมสั่นคอเสียง อู ลากค้างยาวสม่ำเสมออย่างมั่นคง",
+                spellingBreakdown: "M (เมอะ) + OO (อู) + N (เนอะ) = MOON (มูน)",
+                tip: "เป็นเสียงสระยาวที่มั่นคง ไม่มีขยับคลายรูปปากจนกว่าจะปล่อยเสียงสะกดปลายตัวถัดไป",
+                color: "#EBEBFF", // Soft Indigo
+                emoji: "🌙"
+            },
+            {
+                id: "lv-oo-short",
+                category: "Long Vowels",
+                letter: "oo (short)",
+                symbol: "/ʊ/",
+                word: "Book",
+                thaiDesc: "อุ (สั้นกระชับกลม)",
+                exampleThai: "หนังสือ",
+                thaiEquivalent: "สระ อุ (เสียงเกร็งปากกลมสั้น)",
+                mouthShape: "ห่อริมฝีปากกลมยื่นแต่ให้ระดับปากผ่อนคลายและอ้ากว้างกว่าตัว oo ยาวเล็กน้อย เป่าเสียง อุ สั้นกระชับอย่างว่องไวในช่องลำคอหน้า",
+                spellingBreakdown: "B (เบอะ) + OO (อุ) + K (เคอะ) = BOOK (บุค)",
+                tip: "เสียงสั้นจะแฝงลมเหนื่อยเบาๆ ในลำคอ คล้ายเสียงสระ 'อุ' กึ่ง 'อึ' ของไทย",
+                color: "#FFF4E6", // Soft Latte
+                emoji: "📖"
+            },
+            {
+                id: "lv-ou",
+                category: "Long Vowels",
+                letter: "ou / ow",
+                symbol: "/aʊ/",
+                word: "House",
+                thaiDesc: "อา-อู (สระเอาลากหาง)",
+                exampleThai: "บ้าน",
+                thaiEquivalent: "สระ เอา (เสียง อา สไลด์ปิด อู)",
+                mouthShape: "อ้าขากรรไกรปากกว้างสุดเสียง สระอา แล้วเคลื่อนปรับเปลี่ยนหดม้วนห่อริมฝีปากกะทันหันกลายรูปปั้นปากเป็นเสียง อู ตัวจบจังหวะกลืนสนิท",
+                spellingBreakdown: "H (เฮอะ) + OU (อา-อู) + S-E (เซอะ) = HOUSE (เฮาส์ / ฮา-อุส)",
+                tip: "จุดเด่นอยู่ที่การเปลี่ยนตำแหน่งขากรรไกรจากเปิดสุดไปจนถึงการปิดปากกลมแคบ",
+                color: "#FFF9DB", // Soft Yellow
+                emoji: "🏠"
+            },
+            {
+                id: "lv-oi",
+                category: "Long Vowels",
+                letter: "oi / oy",
+                symbol: "/ɔɪ/",
+                word: "Boy",
+                thaiDesc: "ออ-อิ (สระออยเลื่อน)",
+                exampleThai: "เด็กผู้ชาย",
+                thaiEquivalent: "สระ ออย (เสียง ออ เลื่อนเรียบไป อิ)",
+                mouthShape: "ทำรูปปากห่อเป็นแนวกลมแนวตั้งคล้ายสระออ จากนั้นเลื่อนริมฝีปากฉีกกว้างถอยหลังแบนลงแปรผันเป็นสระ อี สั้นๆ เพื่อจบพยางค์ปิด",
+                spellingBreakdown: "B (เบอะ) + OY (ออ-อิ) = BOY (บอย / บอ-อิ)",
+                tip: "ต้องรักษาระดับการเปลี่ยนรูประหว่างสองเสียงให้สม่ำเสมอพริ้วไหวไม่เกิดแรงสะดุด",
+                color: "#E3FAF2", // Soft Mint
+                emoji: "👦"
+            },
+            {
+                id: "lv-ar",
+                category: "Long Vowels",
+                letter: "ar",
+                symbol: "/ɑːr/",
+                word: "Car",
+                thaiDesc: "อา (ม้วนปลายลิ้น)",
+                exampleThai: "รถยนต์",
+                thaiEquivalent: "สระ อา (แบบห่อโค้งลิ้นท้ายคอ)",
+                mouthShape: "อ้าเปิดปากและแนวฟันกว้างขึ้นทำเสียง สระอา จากนั้นเมื่อใกล้จบตัวคำให้ยกม้วนโค้งหลังลิ้นดันขึ้นข้างบนเบาๆ เพื่อสะสมหางเสียง r ในคอ",
+                spellingBreakdown: "C (เคอะ) + AR (อาร์) = CAR (คาร์)",
+                tip: "ลิ้นห้ามไปแตะโดนส่วนใดๆ บนเพดานปาก เป็นแค่การม้วนค้างสะสมเสียงก้องในคอ",
+                color: "#FFECEF", // Soft Rose Pink
+                emoji: "🚗"
+            },
+            {
+                id: "lv-or",
+                category: "Long Vowels",
+                letter: "or / aw",
+                symbol: "/ɔːr/",
+                word: "Fork",
+                thaiDesc: "ออ (ม้วนลิ้นในคอ)",
+                exampleThai: "ส้อม",
+                thaiEquivalent: "สระ ออ (แบบห่อโค้งขอบลิ้น)",
+                mouthShape: "จัดระเบียบรูปปากกลมห่อพอประมานเป่าเสียง สระออ ยาว แล้วจึงดันขยับขอบแนวลิ้นม้วนขึ้นหาช่องคอด้านหลังสร้างเสียงอือเบาๆ ในลำคอเสร็จสิ้น",
+                spellingBreakdown: "F (เฟอะ) + OR (ออ) + K (เคอะ) = FORK (ฟอร์ค)",
+                tip: "รูปปากจะกักลมไว้กลางปากทำให้เสียงดูทุ้มและก้องกังวานกว่าเสียง ออ ปกติ",
+                color: "#FFE8CC", // Soft Orange
+                emoji: "🍴"
+            },
+            {
+                id: "lv-er",
+                category: "Long Vowels",
+                letter: "er / ir / ur",
+                symbol: "/ɜːr/",
+                word: "Bird",
+                thaiDesc: "เออ (ม้วนกระชับคอ)",
+                exampleThai: "นก",
+                thaiEquivalent: "สระ เออ (แบบบีบลำคอและดึงลิ้นค้าง)",
+                mouthShape: "แง้มขากรรไกรเล็กน้อยทำริมฝีปากนิ่ง ดึงแนวโคนลิ้นหดถอยกลับข้างหลัง เกร็งและยกปลายลิ้นค้างลอยกลางอากาศ พ่นเสียง เออ ก้องลำคอสะเทือน",
+                spellingBreakdown: "B (เบอะ) + IR (เออ) + D (เดอะ) = BIRD (เบิร์ด)",
+                tip: "เสียง เออ นี้ลิ้นจะหนาและเกร็ง มีหางเสียงสั่นสะสมเครือในคอโดดเด่น",
+                color: "#F3F0FF", // Soft Indigo
+                emoji: "🐦"
+            },
+
+            // ================= BLENDS =================
+            {
+                id: "b-bl",
+                category: "Blends",
+                letter: "bl",
+                symbol: "/bl/",
+                word: "Blue",
+                thaiDesc: "บล (บ ควบ ล เร็ว)",
+                exampleThai: "สีน้ำเงิน",
+                thaiEquivalent: "บ ควบ ล (เสียงหลอมรวมควบจังหวะเดียว)",
+                mouthShape: "เม้มริมฝีปากแน่นเตรียมปล่อยเสียง b (เบอะ) ในเสี้ยววินาทีเดียวกันให้วางตำแหน่งปลายลิ้นแตะปุ่มเหงือกเตรียมทำเสียง l (เลอะ) ดีดเปิดพร้อมกันเป็นเสียงกลมกลืนตัวเดียว",
+                spellingBreakdown: "BL (เบลอะ) + UE (อู) = BLUE (บลู)",
+                tip: "ห้ามอ่านแยกออกเป็นสองคำว่า เบอะ-ลู เด็ดขาด ต้องดีดลิ้นควบหลอมกลวงตั้งแต่ต้นคำ",
+                color: "#DBEAFE", // Soft Blue
+                emoji: "🔵"
+            },
+            {
+                id: "b-cl",
+                category: "Blends",
+                letter: "cl",
+                symbol: "/kl/",
+                word: "Clock",
+                thaiDesc: "คล (ค ควบ ล พ่นลม)",
+                exampleThai: "นาฬิกา",
+                thaiEquivalent: "ค ควบ ล (แบบดีดปลายลิ้นกะทันหัน)",
+                mouthShape: "ยกโคนลิ้นอุดเพดานเตรียมทำ ค. ขณะเดียวกันยกปลายลิ้นค้างบนปุ่มเหงือก สะบัดลมแรงกระแทกจากด้านหลังระเบิดลงปากตวัดออกเสียงควบคู่รวดเร็ว",
+                spellingBreakdown: "CL (เคลอะ) + O (เอาะ) + CK (คึ) = CLOCK (คล็อก)",
+                tip: "ปลายลิ้นต้องทำงานร่วมกับหลังลิ้นทันเวลาเพื่อให้กระแสลมไม่รั่วหรือสะดุดขาดหาย",
+                color: "#E2F0D9", // Soft Green
+                emoji: "⏰"
+            },
+            {
+                id: "b-fl",
+                category: "Blends",
+                letter: "fl",
+                symbol: "/fl/",
+                word: "Fly",
+                thaiDesc: "ฟล (ฟ ควบ ล รวดเร็ว)",
+                exampleThai: "แมลงวัน / บิน",
+                thaiEquivalent: "ฟ ควบ ล (ลมลอดฟันแล้วตวัดปลายลิ้น)",
+                mouthShape: "กัดขอบปากล่างด้วยฟันบนพ่นเป่าลมเสียง f (ฟฟฟ...) แล้วเลื่อนตวัดสะดีดปลายลิ้นไปชนแตะเพดานฟันหน้าบนต่อทันทีอย่างไม่มีเสียงสะดุดคั่น",
+                spellingBreakdown: "FL (เฟลอะ) + Y (อาย) = FLY (ไฟลน์)",
+                tip: "ความเรียบลื่นในการปรับรูประหว่างริมฝีปากและตําแหน่งลิ้นคือหัวใจสำคัญในการควบตัวนี้",
+                color: "#FFF0F6", // Soft Lavender
+                emoji: "🪰"
+            },
+            {
+                id: "b-gl",
+                category: "Blends",
+                letter: "gl",
+                symbol: "/ɡl/",
+                word: "Glass",
+                thaiDesc: "กล (ก ควบ ล สั่นคอ)",
+                exampleThai: "แก้วน้ำ",
+                thaiEquivalent: "ก ควบ ล (เกลอะ แบบกลืนลำคอสั่น)",
+                mouthShape: "กักเสียง g (เกอะ) ลึกในคอพร้อมสะสมการสั่นในเส้นเสียง ตวัดตบปลายลิ้นสัมผัสเหงือกบนฉับพลันปล่อยเสียงควบรวมทรงกระพลัง 'เกลอะ'",
+                spellingBreakdown: "GL (เกลอะ) + A-S-S (แอส) = GLASS (กลาส)",
+                tip: "เสียง 'เกลอะ' ต้องมีความสั่นเกร็งในกล่องเสียงลำคอมากกว่า 'ก' ควบไทยทั่วไป",
+                color: "#E0F2FE", // Soft Sky
+                emoji: "🥛"
+            },
+            {
+                id: "b-pl",
+                category: "Blends",
+                letter: "pl",
+                symbol: "/pl/",
+                word: "Plane",
+                thaiDesc: "พล (พ ควบ ล ลมแรง)",
+                exampleThai: "เครื่องบิน",
+                thaiEquivalent: "พ ควบ ล (พ่นลมแรงและพับปลายลิ้น)",
+                mouthShape: "ประกบกักลมปากแน่นดีดสะเบิดเสียง p (เพอะ) และสลัดสไลด์ปลายลิ้นตีกลับจากเหงือกบนลงล่างทันที พ่นปริมาณลมแรงสะพัดออกพรั่งพรูหน้าช่องปาก",
+                spellingBreakdown: "PL (เพลอะ) + A-N-E (เอน) = PLANE (เพลน)",
+                tip: "กระแสลมตอนจุดเปลี่ยนสะเบิดต้องมีปริมาณเยอะพอที่จะสัมผัสลมได้ชัดเจน",
+                color: "#F3E8FF", // Soft Purple
+                emoji: "✈️"
+            },
+            {
+                id: "b-st",
+                category: "Blends",
+                letter: "st",
+                symbol: "/st/",
+                word: "Star",
+                thaiDesc: "สเตอะ (ส ควบ ต)",
+                exampleThai: "ดวงดาว",
+                thaiEquivalent: "ส ควบ ต (ไม่มีในสัทศาสตร์ไทยดั้งเดิม)",
+                mouthShape: "เป่าเสียงลม ส (สสส...) รอดไรฟันสบชิดช่วงสั้นๆ จากนั้นหยุดสะกิดลมกระทันหันโดยเอาปลายลิ้นแตะปุ่มเหงือก ตวัดปลายลิ้นลดลงปล่อยเสียงสะเดาะ ต. ทันควัน",
+                spellingBreakdown: "ST (สเตอะ) + AR (อาร์) = STAR (สตาร์)",
+                tip: "สังเกตว่าเสียง t เมื่อนำหลัง s จะถูกลดพลังลมแรงลงกลายเป็นเสียง 'ต' แทนที่จะเป็น 'ท'",
+                color: "#FFF9DB", // Soft Gold
+                emoji: "⭐"
+            },
+            {
+                id: "b-tr",
+                category: "Blends",
+                letter: "tr",
+                symbol: "/tr/",
+                word: "Tree",
+                thaiDesc: "เทรอะ (ปากห่อจู๋)",
+                exampleThai: "ต้นไม้",
+                thaiEquivalent: "ท ควบ ร (ปากจู๋ไม่สั่นรัวลิ้น)",
+                mouthShape: "ห่อปากจู๋พ่นเสียง ท. สะดีดพร้อมปลายลิ้นลอยยกหดถอยเข้ากึ่งกลางปากค้างกักลมไว้ ผสมกลมเป็นเสียงเดียวกัน ไม่รัวสลัดปลายลิ้นฟันบนเลียน ร.",
+                spellingBreakdown: "TR (เทรอะ) + EE (อี) = TREE (ทรี)",
+                tip: "เสียงจะออกไปทางสระ เทรอะ-ทร ทุ้มปากม้วนคล้ายตัวสระเชื่อมต่อกัน",
+                color: "#E2F0D9", // Soft Green
+                emoji: "🌳"
+            }
+        ];
+
+        // UI States
+        let currentCategory = "All";
+        let searchQuery = "";
+        let masteredCards = JSON.parse(localStorage.getItem('phonics_mastered_cards')) || [];
+        
+        // App Initializations
+        window.onload = function() {
+            lucide.createIcons();
+            buildCategoryFilters();
+            renderCards();
+            updateMasteredStats();
+            
+            // Re-apply SVG icons dynamically in rendering
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 400);
+        };
+
+        // Build Dynamic Category Badges for Solid Design
+        function buildCategoryFilters() {
+            const container = document.getElementById('category-filters-container');
+            if (!container) return;
+
+            const categories = ["All", ...new Set(PHONICS_DATA.map(item => item.category))];
+            
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.id = `cat-btn-${cat.replace(/\s+/g, '')}`;
+                
+                // Thai Category Names Translation for better UX
+                let displayName = cat;
+                if (cat === "All") displayName = "🌈 ทั้งหมด";
+                else if (cat === "Short Vowels") displayName = "สระเสียงสั้น";
+                else if (cat === "Consonants") displayName = "พยัญชนะเดี่ยว";
+                else if (cat === "Digraphs") displayName = "เสียงพยัญชนะคู่";
+                else if (cat === "Long Vowels") displayName = "สระเสียงยาว/ทีมสระ";
+                else if (cat === "Blends") displayName = "เสียงควบกล้ำเร็ว";
+
+                const isSelected = currentCategory === cat;
+                const bgClass = isSelected ? "bg-[#34D399]" : "bg-white";
+                
+                btn.className = `${bgClass} solid-border solid-shadow-sm font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all cursor-pointer hover:translate-y-[-1px] text-slate-900`;
+                btn.onclick = () => selectCategory(cat);
+                btn.textContent = displayName;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectCategory(cat) {
+            currentCategory = cat;
+            buildCategoryFilters();
+            renderCards();
+        }
+
+        function filterCards() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            renderCards();
+        }
+
+        // Render Cards with Tactile Solid Card Hover Animations & Thai Pronunciation trigger
+        function renderCards() {
+            const grid = document.getElementById('flashcards-grid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            const filteredData = PHONICS_DATA.filter(item => {
+                const matchesCategory = currentCategory === "All" || item.category === currentCategory;
+                const matchesSearch = item.letter.toLowerCase().includes(searchQuery) || 
+                                      item.word.toLowerCase().includes(searchQuery) ||
+                                      item.thaiDesc.includes(searchQuery) ||
+                                      item.thaiEquivalent.includes(searchQuery) ||
+                                      item.exampleThai.includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredData.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-16 text-center">
+                        <div class="w-20 h-20 bg-rose-100 solid-border rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="search" class="w-10 h-10 text-rose-500"></i>
+                        </div>
+                        <h3 class="font-black text-2xl text-slate-900">ไม่พบข้อมูลเสียงสะกดที่คุณต้องการค้นหา</h3>
+                        <p class="text-slate-500 font-bold mt-2">ลองค้นหา สระสั้น, เสียงเชื่อมพยัญชนะ หรือภาษาไทยดูนะครับ</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const isMastered = masteredCards.includes(item.id);
+                
+                const cardOuter = document.createElement('div');
+                // FIXED HEIGHT BUG SOLVED: Using 430px height to accommodate multi-line text dynamically without spilling.
+                cardOuter.className = 'flip-card h-[430px] w-full cursor-pointer';
+                cardOuter.id = `card-${item.id}`;
+                
+                let isFlipping = false;
+
+                const cardInnerMarkup = `
+                    <div class="flip-card-inner relative w-full h-full">
+                        
+                        <!-- CARD FRONT -->
+                        <div class="flip-card-front solid-border solid-shadow p-5 rounded-3xl flex flex-col justify-between" style="background-color: ${item.color};">
+                            
+                            <!-- Top bar: Category and Mastery Status -->
+                            <div class="flex justify-between items-center w-full">
+                                <span class="bg-slate-950 text-white text-[11px] px-2.5 py-1 font-extrabold rounded-full uppercase tracking-wider">
+                                    ${item.category}
+                                </span>
+                                <button onclick="event.stopPropagation(); toggleMastery(event, '${item.id}')" class="p-1.5 solid-border bg-white rounded-lg hover:scale-105 active:scale-95 transition-transform" title="ทำเครื่องหมายว่าจำได้แล้ว">
+                                    <i data-lucide="star" class="w-4 h-4 ${isMastered ? 'fill-yellow-400 text-amber-500' : 'text-slate-400'}"></i>
+                                </button>
+                            </div>
+
+                            <!-- Main Phonics Symbol / Letter Display -->
+                            <div class="flex flex-col items-center justify-center flex-1 my-2">
+                                <span class="text-6xl font-black text-slate-950 tracking-tight">${item.letter}</span>
+                                <span class="text-xs font-black text-indigo-950 bg-white/85 solid-border px-3.5 py-1 rounded-full mt-2 inline-block tracking-widest">${item.symbol}</span>
+                            </div>
+
+                            <!-- LARGE READABLE THAI EQUIVALENT SOUND ON FRONT - FIXED HEIGHT BUG SOLVED -->
+                            <div class="bg-white/95 solid-border p-3 rounded-2xl w-full h-[88px] flex flex-col justify-center text-center solid-shadow-sm mb-3">
+                                <span class="text-[10px] text-rose-500 font-extrabold uppercase tracking-wide block">เทียบเสียงไทย</span>
+                                <span class="text-lg sm:text-xl font-black text-rose-700 block mt-0.5 leading-snug">${item.thaiDesc}</span>
+                            </div>
+
+                            <!-- Interactive Speaker Tap Section & Helper -->
+                            <div class="flex flex-col gap-1 w-full mt-auto">
+                                <div onclick="event.stopPropagation(); showGuideDetail('${item.id}')" class="w-full bg-[#111827] hover:bg-slate-800 text-white solid-border py-2.5 rounded-xl font-bold text-center flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                    <i data-lucide="book-open" class="w-4 h-4 text-yellow-300"></i>
+                                    <span class="text-xs sm:text-sm">ขยายวิธีออกปากและลม</span>
+                                </div>
+                                <div class="text-[10px] text-slate-950 font-extrabold text-center mt-1">
+                                    <span>คลิกตัวการ์ดเพื่อดูคำศัพท์ ↩</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD BACK (Word and Mnemonic picture description) -->
+                        <div class="flip-card-back bg-white solid-border solid-shadow p-5 rounded-3xl flex flex-col justify-between">
+                            
+                            <!-- Category and Reset Card trigger -->
+                            <div class="flex justify-between items-center">
+                                <span class="bg-indigo-100 text-indigo-800 text-[11px] px-2.5 py-1 font-black rounded-full uppercase">
+                                    ตัวอย่างสะกดคำ
+                                </span>
+                                <span class="text-[11px] text-slate-400 font-extrabold">คลิกกลับ ↩</span>
+                            </div>
+
+                            <!-- Central Mnemonic & Pictogram layout -->
+                            <div class="flex flex-col items-center justify-center flex-1 py-1">
+                                <div class="text-6xl mb-2 hover:scale-110 transition-transform">${item.emoji}</div>
+                                <h2 class="text-3xl font-black text-slate-950 tracking-tight">${item.word}</h2>
+                                <p class="text-base text-emerald-700 font-extrabold mt-1.5 bg-emerald-50 px-3.5 py-1 solid-border rounded-xl border-dashed">แปลไทย: ${item.exampleThai}</p>
+                            </div>
+
+                            <!-- Action on back of card -->
+                            <div class="flex flex-col gap-1.5 w-full mt-auto">
+                                <button onclick="event.stopPropagation(); showGuideDetail('${item.id}')" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white solid-border py-2.5 rounded-xl font-bold flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs sm:text-sm">
+                                    <i data-lucide="book-open" class="w-4 h-4 text-indigo-100"></i>
+                                    <span>ดูสูตรสะกดเสียงแบบละเอียด</span>
+                                </button>
+                                <span class="text-[10px] text-slate-500 font-extrabold text-center">แตะตรงใดก็ได้เพื่อพลิกกลับด้านพยัญชนะ</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                cardOuter.innerHTML = cardInnerMarkup;
+
+                // Bind Card flip handler safely
+                cardOuter.addEventListener('click', function(e) {
+                    if (isFlipping) return;
+                    isFlipping = true;
+                    
+                    cardOuter.classList.toggle('flipped');
+                    
+                    setTimeout(() => {
+                        isFlipping = false;
+                    }, 350); // Cooldown to match transition speed
+                });
+
+                grid.appendChild(cardOuter);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Show Detailed Pronunciation Guide Modal
+        function showGuideDetail(id) {
+            const item = PHONICS_DATA.find(x => x.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-letter').textContent = item.letter;
+            document.getElementById('modal-symbol').textContent = item.symbol;
+            document.getElementById('modal-category').textContent = item.category;
+            document.getElementById('modal-word-title').textContent = `${item.word} (${item.exampleThai})`;
+            document.getElementById('modal-thai-eq').textContent = item.thaiEquivalent;
+            document.getElementById('modal-mouth').textContent = item.mouthShape;
+            document.getElementById('modal-breakdown').textContent = item.spellingBreakdown;
+            document.getElementById('modal-tip').textContent = item.tip;
+
+            // Set color background of badge matching the card color
+            document.getElementById('modal-color-bg').style.backgroundColor = item.color;
+
+            // Open Modal with layout transitions
+            const modal = document.getElementById('guide-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeGuideModal() {
+            const modal = document.getElementById('guide-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Tracking Mastery state (Save to localStorage)
+        function toggleMastery(event, id) {
+            event.stopPropagation(); // Avoid card flip when clicking star
+            
+            const index = masteredCards.indexOf(id);
+            if (index > -1) {
+                masteredCards.splice(index, 1);
+            } else {
+                masteredCards.push(id);
+                triggerSmallConfetti();
+            }
+
+            localStorage.setItem('phonics_mastered_cards', JSON.stringify(masteredCards));
+            updateMasteredStats();
+            renderCards();
+        }
+
+        function updateMasteredStats() {
+            const masteredCountEl = document.getElementById('mastered-count');
+            const totalCountEl = document.getElementById('total-count');
+            
+            if (masteredCountEl) masteredCountEl.textContent = masteredCards.length;
+            if (totalCountEl) totalCountEl.textContent = PHONICS_DATA.length;
+        }
+
+        function resetProgress() {
+            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการล้างข้อมูลความก้าวหน้าทั้งหมด?")) {
+                masteredCards = [];
+                localStorage.removeItem('phonics_mastered_cards');
+                updateMasteredStats();
+                renderCards();
+            }
+        }
+
+        function triggerSmallConfetti() {
+            confetti({
+                particleCount: 80,
+                spread: 60,
+                origin: { y: 0.85 },
+                colors: ['#FF7E5F', '#A5B4FC', '#34D399', '#FACC15']
+            });
+        }
+    </script>
+</body>
+</html>
