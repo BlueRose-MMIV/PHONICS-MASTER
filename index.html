@@ -97,6 +97,42 @@
         .flip-card-back {
             transform: rotateY(180deg);
         }
+
+        /* ===================== PRINT MODE ===================== */
+        /* Area used only for printing physical flashcards for students */
+        #print-area {
+            display: none;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            /* Hide everything on the page by default when printing */
+            body * {
+                visibility: hidden;
+            }
+
+            /* Reveal only the print area and its contents */
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                display: block !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+            }
+
+            .print-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body class="h-full flex flex-col text-gray-900 selection:bg-yellow-200">
@@ -136,7 +172,7 @@
                     <label class="font-black text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
                         <i data-lucide="search" class="w-4 h-4"></i> ค้นหาตัวอักษร / คำศัพท์ / เทียบเสียงไทย:
                     </label>
-                    <input type="text" id="search-input" oninput="filterCards()" placeholder="เช่น a, ch, s, แอะ, ช..." class="w-full px-4 py-3 solid-border rounded-xl font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-white placeholder-gray-500">
+                    <input type="text" id="search-input" oninput="filterCards()" placeholder="เช่น a, ch, s, แอะ, ช หรือคำศัพท์เช่น cat, dog..." class="w-full px-4 py-3 solid-border rounded-xl font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400 bg-white placeholder-gray-500">
                 </div>
 
                 <!-- Category Filters Selector -->
@@ -158,6 +194,9 @@
                     <div class="flex flex-col gap-1.5">
                         <button onclick="resetProgress()" class="text-xs bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-2 solid-border rounded-xl font-bold transition-all active:translate-y-[1px]">
                             ล้างข้อมูลฝึกฝน
+                        </button>
+                        <button onclick="printFlashcards()" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 solid-border rounded-xl font-bold transition-all active:translate-y-[1px] flex items-center justify-center gap-1.5">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> ปริ้นการ์ด
                         </button>
                     </div>
                 </div>
@@ -253,6 +292,9 @@
             </button>
         </div>
     </div>
+
+    <!-- Hidden Print Area: only visible in the print preview / printed page -->
+    <div id="print-area"></div>
 
     <!-- Data Engine & Client Script Code -->
     <script>
@@ -1069,17 +1111,35 @@
         let currentCategory = "All";
         let searchQuery = "";
         let masteredCards = JSON.parse(localStorage.getItem('phonics_mastered_cards')) || [];
-        
+
+        // ===================== SAFE CDN WRAPPERS =====================
+        // lucide (icons) and confetti come from external CDN scripts.
+        // If a CDN is slow, blocked, or offline, those globals won't exist
+        // and calling them directly throws "X is not defined" and can halt
+        // the rest of the function. These wrappers check first so the app
+        // keeps working (just without icons/confetti) instead of crashing.
+        function safeCreateIcons() {
+            if (typeof lucide !== 'undefined' && lucide && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
+        }
+
+        function safeConfetti(options) {
+            if (typeof confetti === 'function') {
+                confetti(options);
+            }
+        }
+
         // App Initializations
         window.onload = function() {
-            lucide.createIcons();
+            safeCreateIcons();
             buildCategoryFilters();
             renderCards();
             updateMasteredStats();
             
             // Re-apply SVG icons dynamically in rendering
             setTimeout(() => {
-                lucide.createIcons();
+                safeCreateIcons();
             }, 400);
         };
 
@@ -1125,14 +1185,9 @@
             renderCards();
         }
 
-        // Render Cards with Tactile Solid Card Hover Animations & Thai Pronunciation trigger
-        function renderCards() {
-            const grid = document.getElementById('flashcards-grid');
-            if (!grid) return;
-
-            grid.innerHTML = '';
-
-            const filteredData = PHONICS_DATA.filter(item => {
+        // Shared filter logic (used by both on-screen rendering and printing)
+        function getFilteredData() {
+            return PHONICS_DATA.filter(item => {
                 const matchesCategory = currentCategory === "All" || item.category === currentCategory;
                 const matchesSearch = item.letter.toLowerCase().includes(searchQuery) || 
                                       item.word.toLowerCase().includes(searchQuery) ||
@@ -1141,6 +1196,85 @@
                                       item.exampleThai.includes(searchQuery);
                 return matchesCategory && matchesSearch;
             });
+        }
+
+        // ===================== WORD SPELLING MODE =====================
+        // When the user types a whole English word (e.g. "cat"), instead of
+        // doing a plain substring search, we "spell out" the word by showing
+        // the individual letter flashcards in order: C, A, T.
+        // Single phonics units that are already valid search terms on their
+        // own (e.g. "ch", "ar", "oo", "qu") are excluded so they keep working
+        // exactly as before (i.e. they show their own dedicated card).
+        function getAllPhonicsUnitTokens() {
+            const tokens = new Set();
+            PHONICS_DATA.forEach(item => {
+                item.letter.toLowerCase().split('/').forEach(part => {
+                    const cleaned = part.replace(/\(.*?\)/g, '').trim();
+                    if (cleaned) tokens.add(cleaned);
+                });
+            });
+            return tokens;
+        }
+
+        function isWordSearch(query) {
+            if (!query || !/^[a-z]{2,}$/i.test(query)) return false;
+            const tokens = getAllPhonicsUnitTokens();
+            return !tokens.has(query.toLowerCase());
+        }
+
+        // Find the best single-letter flashcard (Consonants / Short Vowels)
+        // that represents a given character of the word being spelled out.
+        function findLetterCard(char) {
+            const singleLetterPools = PHONICS_DATA.filter(item =>
+                item.category === "Consonants" || item.category === "Short Vowels"
+            );
+
+            // Prefer an exact single-letter match (a, b, c, ... z)
+            let match = singleLetterPools.find(item => item.letter.toLowerCase() === char);
+            if (match) return match;
+
+            // Fallback for letters stored as a pair, e.g. "q" -> stored as "qu"
+            match = singleLetterPools.find(item => item.letter.toLowerCase().startsWith(char));
+            return match || null;
+        }
+
+        // Build the ordered list of flashcards that spell out the given word.
+        // Repeated letters (e.g. the two "o"s in "book") are intentionally
+        // kept as separate entries so the word is fully spelled out.
+        function getWordSpellingCards(word) {
+            const cards = [];
+            word.toLowerCase().split('').forEach((ch, idx) => {
+                const item = findLetterCard(ch);
+                if (item) {
+                    cards.push({ ...item, _spellIndex: idx });
+                }
+            });
+            return cards;
+        }
+
+        // Render Cards with Tactile Solid Card Hover Animations & Thai Pronunciation trigger
+        function renderCards() {
+            const grid = document.getElementById('flashcards-grid');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            const wordMode = isWordSearch(searchQuery);
+            const filteredData = wordMode ? getWordSpellingCards(searchQuery) : getFilteredData();
+
+            if (wordMode && filteredData.length > 0) {
+                const banner = document.createElement('div');
+                banner.className = 'col-span-full bg-[#A5B4FC] solid-border solid-shadow-sm p-4 rounded-2xl text-center';
+                banner.innerHTML = `
+                    <p class="font-black text-slate-950 text-lg sm:text-xl flex items-center justify-center gap-2 flex-wrap">
+                        🔤 กำลังสะกดคำว่า “<span class="uppercase">${searchQuery}</span>”
+                    </p>
+                    <p class="font-extrabold text-slate-800 text-sm sm:text-base mt-1 tracking-widest">
+                        ${filteredData.map(it => it.letter.toUpperCase()).join(' &nbsp;•&nbsp; ')}
+                    </p>
+                `;
+                grid.appendChild(banner);
+            }
 
             if (filteredData.length === 0) {
                 grid.innerHTML = `
@@ -1149,20 +1283,22 @@
                             <i data-lucide="search" class="w-10 h-10 text-rose-500"></i>
                         </div>
                         <h3 class="font-black text-2xl text-slate-900">ไม่พบข้อมูลเสียงสะกดที่คุณต้องการค้นหา</h3>
-                        <p class="text-slate-500 font-bold mt-2">ลองค้นหา สระสั้น, เสียงเชื่อมพยัญชนะ หรือภาษาไทยดูนะครับ</p>
+                        <p class="text-slate-500 font-bold mt-2">ลองค้นหา สระสั้น, เสียงเชื่อมพยัญชนะ, คำศัพท์ภาษาอังกฤษ (เช่น cat, dog) หรือภาษาไทยดูนะครับ</p>
                     </div>
                 `;
-                lucide.createIcons();
+                safeCreateIcons();
                 return;
             }
 
-            filteredData.forEach(item => {
+            filteredData.forEach((item, index) => {
                 const isMastered = masteredCards.includes(item.id);
                 
                 const cardOuter = document.createElement('div');
                 // FIXED HEIGHT BUG SOLVED: Using 430px height to accommodate multi-line text dynamically without spilling.
                 cardOuter.className = 'flip-card h-[430px] w-full cursor-pointer';
-                cardOuter.id = `card-${item.id}`;
+                // Index suffix keeps the DOM id unique even when the same letter
+                // appears more than once in word-spelling mode (e.g. "book").
+                cardOuter.id = `card-${item.id}-${index}`;
                 
                 let isFlipping = false;
 
@@ -1253,7 +1389,7 @@
                 grid.appendChild(cardOuter);
             });
 
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         // Show Detailed Pronunciation Guide Modal
@@ -1320,12 +1456,108 @@
         }
 
         function triggerSmallConfetti() {
-            confetti({
+            safeConfetti({
                 particleCount: 80,
                 spread: 60,
                 origin: { y: 0.85 },
                 colors: ['#FF7E5F', '#A5B4FC', '#34D399', '#FACC15']
             });
+        }
+
+        // ===================== PRINT FLASHCARDS =====================
+        // Builds a clean, paper-friendly version of the currently filtered
+        // flashcards (respects search + category filters) and sends it to
+        // the browser's print dialog so teachers can print/cut them out
+        // for students.
+        function printFlashcards() {
+            // Respect word-spelling mode: if the user is currently spelling out
+            // a word (e.g. "cat"), print exactly those letter cards, in order,
+            // including repeated letters, instead of the plain filtered set.
+            const wordMode = isWordSearch(searchQuery);
+            const dataToPrint = wordMode ? getWordSpellingCards(searchQuery) : getFilteredData();
+
+            if (dataToPrint.length === 0) {
+                alert("ไม่พบบัตรคำที่ตรงกับตัวกรองปัจจุบัน กรุณาลองปรับคำค้นหาหรือหมวดหมู่ก่อนสั่งพิมพ์");
+                return;
+            }
+
+            const printArea = document.getElementById('print-area');
+
+            const categoryLabel = currentCategory === "All" ? "ทุกหมวดหมู่" : currentCategory;
+            const todayStr = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+            const subtitleLine = wordMode
+                ? `กำลังสะกดคำว่า “${searchQuery.toUpperCase()}” • จำนวน ${dataToPrint.length} ใบ • พิมพ์เมื่อ ${todayStr}`
+                : `หมวดหมู่: ${categoryLabel} • จำนวน ${dataToPrint.length} ใบ • พิมพ์เมื่อ ${todayStr}`;
+
+            let cardsHtml = '';
+            dataToPrint.forEach(item => {
+                cardsHtml += `
+                    <div class="print-card" style="
+                        width: 220px;
+                        border: 2px dashed #111827;
+                        border-radius: 16px;
+                        padding: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        text-align: center;
+                        background-color: ${item.color};
+                    ">
+                        <div style="
+                            font-size: 10px;
+                            font-weight: 800;
+                            background: #111827;
+                            color: #fff;
+                            padding: 2px 10px;
+                            border-radius: 999px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                            margin-bottom: 6px;
+                        ">${item.category}</div>
+
+                        <div style="font-size: 40px; font-weight: 900; color: #111827; line-height: 1;">${item.letter}</div>
+                        <div style="font-size: 12px; font-weight: 800; color: #312e81; background: rgba(255,255,255,0.85); border: 2px solid #111827; padding: 1px 10px; border-radius: 999px; margin-top: 4px;">${item.symbol}</div>
+
+                        <div style="
+                            width: 100%;
+                            background: rgba(255,255,255,0.95);
+                            border: 2px solid #111827;
+                            border-radius: 12px;
+                            padding: 6px 8px;
+                            margin: 8px 0;
+                        ">
+                            <div style="font-size: 9px; font-weight: 800; color: #e11d48; text-transform: uppercase;">เทียบเสียงไทย</div>
+                            <div style="font-size: 15px; font-weight: 900; color: #be123c;">${item.thaiDesc}</div>
+                        </div>
+
+                        <div style="border-top: 2px dashed #64748b; width: 100%; margin: 4px 0 8px 0;"></div>
+
+                        <div style="font-size: 30px; line-height: 1;">${item.emoji}</div>
+                        <div style="font-size: 18px; font-weight: 900; color: #111827; margin-top: 2px;">${item.word}</div>
+                        <div style="font-size: 12px; font-weight: 700; color: #047857;">แปลไทย: ${item.exampleThai}</div>
+                    </div>
+                `;
+            });
+
+            printArea.innerHTML = `
+                <div style="font-family: 'Fredoka','Anuphan','Lexend',sans-serif; padding: 4px 4px 16px 4px;">
+                    <div style="text-align:center; margin-bottom: 14px;">
+                        <h1 style="font-size: 22px; font-weight: 900; margin: 0;">🔤 Phonics Master - บัตรคำสำหรับนักเรียน</h1>
+                        <p style="font-size: 12px; font-weight: 700; color: #444; margin: 4px 0 0 0;">
+                            ${subtitleLine}
+                        </p>
+                        <p style="font-size: 11px; font-weight: 600; color: #666; margin: 2px 0 0 0;">
+                            ✂️ ตัดตามเส้นประรอบบัตรแต่ละใบเพื่อใช้เป็นการ์ดคำศัพท์
+                        </p>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;">
+                        ${cardsHtml}
+                    </div>
+                </div>
+            `;
+
+            // Give the browser a tick to lay out the print area before opening the dialog
+            setTimeout(() => window.print(), 50);
         }
     </script>
 </body>
